@@ -285,7 +285,7 @@ dotnet test --filter "FullyQualifiedName~BookMatchingServiceTests"
 {
   "Gemini": {
     "ApiKey": "",
-    "Model": "gemini-2.0-flash",
+    "Model": "gemini-2.5-flash",
     "BaseUrl": "https://generativelanguage.googleapis.com/v1beta"
   },
   "OpenLibrary": {
@@ -298,7 +298,7 @@ dotnet test --filter "FullyQualifiedName~BookMatchingServiceTests"
 | Setting | Description | Default |
 |---------|-------------|---------|
 | `Gemini:ApiKey` | Your Google Gemini API key | (required) |
-| `Gemini:Model` | Gemini model to use | `gemini-2.0-flash` |
+| `Gemini:Model` | Gemini model to use | `gemini-2.5-flash` |
 | `OpenLibrary:BaseUrl` | Open Library API URL | `https://openlibrary.org` |
 | `OpenLibrary:TimeoutSeconds` | API timeout in seconds | `30` |
 
@@ -306,7 +306,7 @@ dotnet test --filter "FullyQualifiedName~BookMatchingServiceTests"
 
 - **.NET 9** - Latest .NET framework
 - **ASP.NET Core Web API** - REST API framework
-- **Google Gemini AI** - AI model for query extraction (gemini-2.0-flash)
+- **Google Gemini AI** - AI model for query extraction (gemini-2.5-flash)
 - **Open Library API** - Free book database API
 - **xUnit + Moq + FluentAssertions** - Testing framework
 - **Tailwind CSS** - Frontend styling (via CDN)
