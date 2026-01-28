@@ -1,10 +1,49 @@
 # FindThatBook
 
-AI-Powered Book Search - InfoTrack Technical Assessment
+**AI-Powered Book Search** - InfoTrack Technical Assessment
 
 ## Overview
 
-FindThatBook is a .NET 8 Web API that uses AI (Google Gemini) to extract structured information from "dirty" book search queries and matches them against the Open Library API. It returns up to 5 book candidates with detailed explanations of why each book matched.
+FindThatBook is a .NET 9 Web API that uses AI (Google Gemini) to extract structured information from "dirty" book search queries and matches them against the Open Library API. It returns up to 5 book candidates with detailed explanations of why each book matched.
+
+## How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           APPLICATION FLOW                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  User Input                    AI Processing                 Book Search
+  ──────────                    ─────────────                 ───────────
+       │                              │                            │
+       ▼                              ▼                            ▼
+┌─────────────┐    ┌─────────────────────────────┐    ┌─────────────────────┐
+│ "mark       │───▶│   Google Gemini AI          │───▶│   Open Library API  │
+│ huckleberry │    │   Extracts:                 │    │   Searches for:     │
+│ 1884"       │    │   - Title: Huckleberry Finn │    │   - Matching books  │
+│             │    │   - Author: Mark Twain      │    │   - Cover images    │
+│             │    │   - Year: 1884              │    │   - Metadata        │
+└─────────────┘    └─────────────────────────────┘    └─────────────────────┘
+                                                               │
+                                                               ▼
+                              ┌─────────────────────────────────────────────┐
+                              │         Matching Algorithm                   │
+                              │  Scores each result by:                      │
+                              │  - Title similarity (40%)                    │
+                              │  - Author similarity (35%)                   │
+                              │  - Keywords match (15%)                      │
+                              │  - Year match (10%)                          │
+                              └─────────────────────────────────────────────┘
+                                                               │
+                                                               ▼
+                              ┌─────────────────────────────────────────────┐
+                              │              Response                        │
+                              │  Returns up to 5 candidates with:            │
+                              │  - Match strength (Exact/Strong/Partial)     │
+                              │  - Match score (0-100)                        │
+                              │  - Explanation of why it matched             │
+                              └─────────────────────────────────────────────┘
+```
 
 ## Features
 
@@ -20,8 +59,8 @@ FindThatBook is a .NET 8 Web API that uses AI (Google Gemini) to extract structu
 FindThatBook/
 ├── src/
 │   ├── FindThatBook.Domain/          # Entities, Interfaces, Enums, Value Objects
-│   ├── FindThatBook.Application/      # DTOs, Services, Use Cases
-│   ├── FindThatBook.Infrastructure/   # External API integrations (Gemini, Open Library)
+│   ├── FindThatBook.Application/     # DTOs, Services, Use Cases
+│   ├── FindThatBook.Infrastructure/  # External API integrations (Gemini, Open Library)
 │   └── FindThatBook.API/             # Controllers, Configuration, wwwroot
 └── tests/
     └── FindThatBook.Tests/           # Unit tests with xUnit
@@ -50,77 +89,88 @@ FindThatBook/
 
 ## Prerequisites
 
-- .NET 8 SDK
+- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - Google Gemini API Key (free tier available at [Google AI Studio](https://aistudio.google.com/))
 
-## Setup Instructions
+## Quick Start
 
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
-cd FindThatBook
+git clone https://github.com/julianrozo77-sketch/findthatbook.git
+cd findthatbook
 ```
 
 ### 2. Configure Gemini API Key
 
-Option A: Edit `appsettings.Development.json`:
+You need a Google Gemini API key to run this application. Get one free at [Google AI Studio](https://aistudio.google.com/).
+
+**Option A: User Secrets (Recommended for Development)**
+
+```bash
+cd src/FindThatBook.API
+dotnet user-secrets init
+dotnet user-secrets set "Gemini:ApiKey" "YOUR_API_KEY_HERE"
+```
+
+**Option B: Environment Variable**
+
+Windows (CMD):
+```cmd
+set Gemini__ApiKey=YOUR_API_KEY_HERE
+```
+
+Windows (PowerShell):
+```powershell
+$env:Gemini__ApiKey="YOUR_API_KEY_HERE"
+```
+
+Linux/Mac:
+```bash
+export Gemini__ApiKey=YOUR_API_KEY_HERE
+```
+
+**Option C: Edit Configuration File**
+
+> **Note**: Only use this for local testing. Never commit API keys to version control.
+
+Edit `src/FindThatBook.API/appsettings.Development.json`:
 ```json
 {
   "Gemini": {
-    "ApiKey": "YOUR_GEMINI_API_KEY_HERE"
+    "ApiKey": "YOUR_API_KEY_HERE"
   }
 }
 ```
 
-Option B: Use environment variable:
-```bash
-set Gemini__ApiKey=YOUR_GEMINI_API_KEY_HERE
-```
-
-Option C: Use .NET User Secrets (recommended):
-```bash
-cd src/FindThatBook.API
-dotnet user-secrets init
-dotnet user-secrets set "Gemini:ApiKey" "YOUR_GEMINI_API_KEY_HERE"
-```
-
-### 3. Build the Solution
+### 3. Build and Run
 
 ```bash
+# From the root directory
 dotnet build
-```
 
-### 4. Run Tests
-
-```bash
-dotnet test
-```
-
-### 5. Run the Application
-
-```bash
+# Run the application
 cd src/FindThatBook.API
 dotnet run
 ```
 
-The application will start at:
-- HTTP: http://localhost:5000
-- HTTPS: https://localhost:5001
+### 4. Access the Application
 
-### 6. Access the Application
+Once running, open your browser:
 
-- **Web UI**: Open http://localhost:5000 in your browser
-- **Swagger**: http://localhost:5000/swagger
-- **API**: POST http://localhost:5000/api/books/search
+| URL | Description |
+|-----|-------------|
+| http://localhost:5026 | Web UI - Interactive search interface |
+| http://localhost:5026/swagger | Swagger - API documentation |
+| https://localhost:7111 | HTTPS endpoint |
 
 ## API Usage
 
-### Search Books
+### Search Books Endpoint
 
-**Endpoint**: `POST /api/books/search`
+**POST** `/api/books/search`
 
-**Request Body**:
+**Request:**
 ```json
 {
   "query": "tolkien hobbit illustrated 1937",
@@ -128,7 +178,7 @@ The application will start at:
 }
 ```
 
-**Response**:
+**Response:**
 ```json
 {
   "originalQuery": "tolkien hobbit illustrated 1937",
@@ -161,50 +211,45 @@ The application will start at:
 }
 ```
 
+### cURL Example
+
+```bash
+curl -X POST http://localhost:5026/api/books/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "orwell 1984", "maxResults": 5}'
+```
+
 ## Example Queries
+
+The AI can understand various "dirty" queries and extract structured information:
 
 | Dirty Query | Extracted Info |
 |------------|----------------|
-| "mark huckleberry" | Title: The Adventures of Huckleberry Finn, Author: Mark Twain |
-| "tolkien hobbit illustrated 1937" | Title: The Hobbit, Author: J.R.R. Tolkien, Year: 1937, Keywords: illustrated |
-| "orwell 1984" | Title: 1984, Author: George Orwell |
-| "rowling philosopher stone" | Title: Harry Potter and the Philosopher's Stone, Author: J.K. Rowling |
+| `"mark huckleberry"` | Title: The Adventures of Huckleberry Finn, Author: Mark Twain |
+| `"tolkien hobbit illustrated 1937"` | Title: The Hobbit, Author: J.R.R. Tolkien, Year: 1937, Keywords: illustrated |
+| `"orwell 1984"` | Title: 1984, Author: George Orwell |
+| `"rowling philosopher stone"` | Title: Harry Potter and the Philosopher's Stone, Author: J.K. Rowling |
+| `"that book about the whale moby"` | Title: Moby Dick, Author: Herman Melville |
 
 ## Matching Algorithm
 
 The matching system uses a weighted scoring approach:
 
-| Component | Weight |
-|-----------|--------|
-| Title | 40% |
-| Author | 35% |
-| Keywords | 15% |
-| Year | 10% |
+| Component | Weight | Description |
+|-----------|--------|-------------|
+| Title | 40% | How closely the book title matches |
+| Author | 35% | How closely the author name matches |
+| Keywords | 15% | Presence of keywords in book metadata |
+| Year | 10% | How close the publication year is |
 
 ### Match Strength Levels
 
-- **Exact**: Both title and author match exactly (95%+ similarity)
-- **Strong**: High confidence on both title and author (70%+ on both)
-- **Partial**: Good match on either title OR author (60%+)
-- **Weak**: Some keywords or partial matches found
-
-## Configuration Options
-
-### appsettings.json
-
-```json
-{
-  "Gemini": {
-    "ApiKey": "",
-    "Model": "gemini-1.5-flash",
-    "BaseUrl": "https://generativelanguage.googleapis.com/v1beta"
-  },
-  "OpenLibrary": {
-    "BaseUrl": "https://openlibrary.org",
-    "TimeoutSeconds": 30
-  }
-}
-```
+| Level | Criteria |
+|-------|----------|
+| **Exact** | Both title and author match exactly (95%+ similarity) |
+| **Strong** | High confidence on both title and author (70%+ on both) |
+| **Partial** | Good match on either title OR author (60%+) |
+| **Weak** | Some keywords or partial matches found |
 
 ## Testing
 
@@ -223,19 +268,64 @@ dotnet test --filter "FullyQualifiedName~BookMatchingServiceTests"
 
 ### Test Coverage
 
-- `BookMatchingServiceTests`: Tests for matching algorithm
-- `SearchBooksUseCaseTests`: Tests for the main use case orchestration
-- `BookCandidateTests`: Tests for domain entities
-- `ExtractedBookInfoTests`: Tests for value objects
+| Test Class | Coverage |
+|------------|----------|
+| `BookMatchingServiceTests` | Matching algorithm logic |
+| `SearchBooksUseCaseTests` | Main use case orchestration |
+| `BookCandidateTests` | Domain entity validation |
+| `ExtractedBookInfoTests` | Value object behavior |
+| `GeminiExtractionServiceTests` | AI service integration |
+| `OpenLibrarySearchServiceTests` | Book search integration |
+
+## Configuration Reference
+
+### appsettings.json
+
+```json
+{
+  "Gemini": {
+    "ApiKey": "",
+    "Model": "gemini-2.0-flash",
+    "BaseUrl": "https://generativelanguage.googleapis.com/v1beta"
+  },
+  "OpenLibrary": {
+    "BaseUrl": "https://openlibrary.org",
+    "TimeoutSeconds": 30
+  }
+}
+```
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `Gemini:ApiKey` | Your Google Gemini API key | (required) |
+| `Gemini:Model` | Gemini model to use | `gemini-2.0-flash` |
+| `OpenLibrary:BaseUrl` | Open Library API URL | `https://openlibrary.org` |
+| `OpenLibrary:TimeoutSeconds` | API timeout in seconds | `30` |
 
 ## Technologies Used
 
-- .NET 8
-- ASP.NET Core Web API
-- Google Gemini AI (gemini-1.5-flash)
-- Open Library API
-- xUnit + Moq + FluentAssertions
-- Tailwind CSS (via CDN)
+- **.NET 9** - Latest .NET framework
+- **ASP.NET Core Web API** - REST API framework
+- **Google Gemini AI** - AI model for query extraction (gemini-2.0-flash)
+- **Open Library API** - Free book database API
+- **xUnit + Moq + FluentAssertions** - Testing framework
+- **Tailwind CSS** - Frontend styling (via CDN)
+
+## Troubleshooting
+
+### Common Issues
+
+**"API key not configured" error**
+- Ensure you've set the Gemini API key using one of the methods in Step 2
+- If using environment variables, restart your terminal after setting them
+
+**"Connection refused" error**
+- Make sure no other application is using ports 5026 or 7111
+- Try running with `dotnet run --urls "http://localhost:5000"`
+
+**Gemini API rate limiting**
+- The free tier has rate limits; wait a moment and try again
+- Consider upgrading to a paid tier for production use
 
 ## License
 
